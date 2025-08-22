@@ -1,0 +1,597 @@
+const express = require("express");
+const mysql = require("mysql2/promise"); // Use mysql2 for async/await support
+const bcrypt = require("bcryptjs");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const multer = require("multer");
+const path = require("path");
+const app = express();
+const session = require("express-session");
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session({
+    secret: "secretKey",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }, // Change to true if using HTTPS
+  })
+);
+
+// Database Connection
+const db = mysql.createPool({
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "ptms",
+});
+
+// Helper Functions for Validation
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(String(email).toLowerCase());
+}
+
+function validateUsername(username) {
+  return username.length >= 3; // Username must be at least 3 characters
+}
+
+// Register Endpoint
+app.post("/register", async (req, res) => {
+  const { email, username, password } = req.body;
+
+  if (!email || !username || !password) {
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required" });
+  }
+
+  if (!validateEmail(email) || !validateUsername(username)) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid email or username" });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const query =
+      "INSERT INTO users (email, username, password) VALUES (?, ?, ?)";
+    await db.query(query, [email, username, hashedPassword]);
+    res
+      .status(201)
+      .json({ success: true, message: "User registered successfully" });
+  } catch (error) {
+    console.error("Error during registration:", error);
+    res.status(500).json({ success: false, message: "Registration failed" });
+  }
+});
+
+// Login Endpoint with Role Validation
+app.post("/login", async (req, res) => {
+  const { username, password, role } = req.body;
+
+  if (!username || !password || !role) {
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required" });
+  }
+
+  if (role !== "admin" && role !== "tester") {
+    return res.status(400).json({ success: false, message: "Invalid role" });
+  }
+
+  try {
+    const query =
+      role === "admin"
+        ? "SELECT * FROM admin WHERE username = ?"
+        : "SELECT * FROM users WHERE username = ?";
+    const [results] = await db.query(query, [username]);
+
+    if (results.length === 0) {
+      return res
+        .status(401)
+        .json({ success: false, message: `${role} not found` });
+    }
+
+    const user = results[0];
+    const isValidPassword =
+      role === "admin"
+        ? password === user.password
+        : await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid username or password" });
+    }
+
+    if (role === "tester") {
+      req.session.testerId = user.id; // Store testerId in session
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `${role} login successful`,
+      role,
+      testerId: user.id || null,
+    });
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).json({ success: false, message: "Login failed" });
+  }
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Error destroying session:', err);
+    } else {
+      res.redirect('../login.html');
+    }
+  });
+});
+
+// Forgot Password Endpoint
+app.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Email is required" });
+  }
+
+  try {
+    const query = "SELECT * FROM users WHERE email = ?";
+    const [results] = await db.query(query, [email]);
+
+    if (results.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Email not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset link has been sent to your email",
+    });
+  } catch (error) {
+    console.error("Error during forgot password:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to process request" });
+  }
+});
+
+// File Upload Configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
+
+app.post("/api/reports", upload.single("file"), async (req, res) => {
+  const { taskId, vulnerability, severity, recommendations, testerId } =
+    req.body;
+  const file = req.file ? req.file.filename : null;
+  const submissionDate = new Date();
+  const reportStatus = "Pending"; // Default status for the report
+  const feedback = null; // Default feedback value
+
+  if (!taskId || !vulnerability || !severity || !recommendations || !testerId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required" });
+  }
+
+  try {
+    // Insert the report into the reports table
+    await db.query(
+      `INSERT INTO reports 
+      (task_id, tester_id, vulnerability, severity, recommendations, report_file, submission_date, status, feedback) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        taskId,
+        testerId,
+        vulnerability,
+        severity,
+        recommendations,
+        file,
+        submissionDate,
+        reportStatus,
+        feedback,
+      ]
+    );
+
+    // Update the task status in the tasks table
+    const [result] = await db.query(
+      "UPDATE tasks SET status = 'Completed' WHERE id = ? AND tester_id = ?",
+      [taskId, testerId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found or already completed",
+      });
+    }
+
+    res.json({
+      success: true,
+      message:
+        "Report submitted successfully, and task status updated to Completed",
+    });
+  } catch (error) {
+    console.error("Error during report submission:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to submit report" });
+  }
+});
+
+// Update Report Status
+app.post("/api/reports/:id/update-status", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!status) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Status is required" });
+  }
+
+  try {
+    // Update the report status in the database
+    const query = "UPDATE reports SET status = ? WHERE id = ?";
+    const [result] = await db.query(query, [status, id]);
+
+    if (result.affectedRows === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Report not found" });
+    }
+
+    res.json({ success: true, message: "Report status updated successfully" });
+  } catch (error) {
+    console.error("Error updating report status:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to update report status" });
+  }
+});
+
+app.get("/api/all-reports", async (req, res) => {
+  try {
+    const [results] = await db.query("SELECT * FROM reports");
+    res.json({ success: true, reports: results });
+  } catch (error) {
+    console.error("Error fetching all reports:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch reports" });
+  }
+});
+
+// Provide Feedback to Report
+app.post("/api/reports/:id/feedback", async (req, res) => {
+  const { id } = req.params;
+  const { feedback } = req.body;
+
+  if (!feedback) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Feedback is required" });
+  }
+
+  try {
+    // Update the feedback in the database
+    const query = "UPDATE reports SET feedback = ? WHERE id = ?";
+    const [result] = await db.query(query, [feedback, id]);
+
+    if (result.affectedRows === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Report not found" });
+    }
+
+    res.json({ success: true, message: "Feedback submitted successfully" });
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to submit feedback" });
+  }
+});
+
+// Fetch all testers
+app.get("/api/testers", async (req, res) => {
+  try {
+    const [results] = await db.query("SELECT * FROM users");
+
+    res.json({ success: true, testers: results });
+  } catch (error) {
+    console.error("Error fetching testers:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch testers" });
+  }
+});
+
+// Endpoint to create a task
+app.post("/createTask", async (req, res) => {
+  try {
+    const { id, tester_id, target_system, scope, status, deadline, instructions } =
+      req.body;
+
+    const query =
+      "INSERT INTO tasks (id, tester_id, target_system, scope, status, deadline, instructions) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    const [result] = await db.query(query, [
+      id,
+      tester_id,
+      target_system,
+      scope,
+      status,
+      deadline,
+      instructions,
+    ]);
+
+    res.json({ success: true, message: "Task created successfully." });
+  } catch (error) {
+    console.error("Error inserting task:", error);
+    res.json({ success: false, message: "Failed to create task." });
+  }
+});
+
+app.get("/api/tasks", async (req, res) => {
+  try {
+    const [results] = await db.query("SELECT * FROM tasks");
+    res.json({ success: true, tasks: results });
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch tasks" });
+  }
+});
+
+app.post("/api/assign-task", async (req, res) => {
+  const { taskId, testerId } = req.body;
+
+  if (!taskId || !testerId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing taskId or testerId" });
+  }
+
+  try {
+    // Update the task with the assigned tester
+    const result = await db.query(
+      "UPDATE tasks SET tester_id = ? WHERE id = ?",
+      [testerId, taskId]
+    );
+    if (result.affectedRows === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Task not found" });
+    }
+
+    // Create a notification
+    const message = `Task #${taskId} has been assigned to you.`;
+    const notificationResult = await db.query(
+      "INSERT INTO notifications (user_id, message) VALUES (?, ?)",
+      [testerId, message]
+    );
+    if (notificationResult.affectedRows === 0) {
+      return res
+        .status(500)
+        .json({ success: false, message: "Failed to create notification" });
+    }
+
+    res.json({ success: true, message: "Task assigned and notification sent" });
+  } catch (error) {
+    console.error("Error assigning task:", error);
+    res.status(500).json({ success: false, message: "Failed to assign task" });
+  }
+});
+
+// Fetch tasks for a specific tester (admin view)
+app.get("/api/tasks/tester/:testerId", async (req, res) => {
+  const testerId = req.params.testerId;
+  try {
+    const [results] = await db.query(
+      "SELECT * FROM tasks WHERE tester_id = ?",
+      [testerId]
+    );
+    res.json({ success: true, tasks: results });
+    // console.log(results); // Log the fetched tasks
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch tasks" });
+  }
+});
+
+app.get("/api/tasks/:taskId", async (req, res) => {
+  const { taskId } = req.params;
+
+  try {
+    const [result] = await db.query("SELECT * FROM tasks WHERE id = ?", [
+      taskId,
+    ]);
+
+    if (result.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Task not found" });
+    }
+
+    res.json({ success: true, task: result[0] });
+  } catch (error) {
+    console.error("Error fetching task:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch task" });
+  }
+});
+
+// Fetch completed tasks for a tester
+app.get("/api/tasks/tester/:testerId/completed", async (req, res) => {
+  const { testerId } = req.params;
+
+  try {
+    const query =
+      "SELECT * FROM tasks WHERE tester_id = ? AND status = 'Completed'";
+    const [tasks] = await db.query(query, [testerId]);
+
+    res.json({ tasks });
+  } catch (error) {
+    console.error("Error fetching completed tasks:", error);
+    res.status(500).json({ message: "Error fetching tasks" });
+  }
+});
+
+// API endpoint to get notifications
+app.get("/api/getNotifications", (req, res) => {
+  const sql = "SELECT * FROM notifications ORDER BY id DESC"; // Fetch notifications
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error fetching notifications:", err);
+      return res.status(500).json({ success: false, message: "Server error" });
+    }
+
+    return res.json({
+      success: true,
+      notifications: results,
+    });
+  });
+});
+
+// API Endpoint to mark a notification as read
+app.put("/api/getNotifications/:id", async (req, res) => {
+  const notificationId = req.params.id;
+  try {
+    const [results] = await db.query(
+      "UPDATE notifications SET status = 'read' WHERE id = ?",
+      [notificationId]
+    );
+    if (results.affectedRows > 0) {
+      res.json({ success: true, message: "Notification marked as read" });
+    } else {
+      res
+        .status(404)
+        .json({ success: false, message: "Notification not found" });
+    }
+  } catch (error) {
+    console.error("Error updating notification:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to mark notification as read" });
+  }
+});
+
+app.get("/getNotifications/:testerId", async (req, res) => {
+  const testerId = req.params.testerId;
+  const notifications = await db.query("SELECT * FROM notifications WHERE user_id = ?", [testerId]);
+  res.json({ success: true, notifications });
+});
+
+// Fetch Tester Dashboard Data (Tasks, Reports, etc.)
+app.get("/api/dashboard/:testerId", async (req, res) => {
+  const testerId = req.params.testerId;
+
+  try {
+    // Fetch pending tasks
+    const [tasks] = await db.query(
+      "SELECT * FROM tasks WHERE tester_id = ? AND status = 'Pending'",
+      [testerId]
+    );
+
+    // Fetch submitted reports
+    const [reports] = await db.query(
+      "SELECT * FROM reports WHERE tester_id = ?",
+      [testerId]
+    );
+
+    res.json({ success: true, tasks, reports });
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch dashboard data" });
+  }
+});
+
+// Generate Summary Reports (for Admin)
+app.get("/api/summary-report", async (req, res) => {
+  try {
+    // Fetch all completed tasks with report statuses
+    const [tasks] = await db.query(
+      "SELECT * FROM tasks WHERE status = 'Completed'"
+    );
+    const [reports] = await db.query("SELECT * FROM reports");
+
+    res.json({ success: true, tasks, reports });
+  } catch (error) {
+    console.error("Error generating summary report:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to generate summary report" });
+  }
+});
+
+app.post('/markAsRead', async (req, res) => {
+  const { notificationId } = req.body;
+
+  try {
+    await db.query('UPDATE notifications SET status = "read" WHERE id = ?', [notificationId]);
+    res.json({ success: true, message: 'Notification marked as read' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error updating notification', error });
+  }
+});
+
+// Endpoint to fetch feedback
+app.get("/getFeedback", (req, res) => {
+  const query = "SELECT * FROM feedback"; // Adjust table/columns based on your schema
+
+  db.query(sql)
+  .then((results) => {
+    return res.json({
+      success: true,
+      notifications: results,
+    });
+  })
+  .catch((err) => {
+    console.error("Error fetching notifications:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  });
+});
+
+// Endpoint to submit feedback
+app.post("/submitFeedback", (req, res) => {
+  const { username, message } = req.body;
+
+  const query = "INSERT INTO feedback (tester_username, message) VALUES (?, ?)";
+
+  db.query(query, [username, message], (err, result) => {
+    if (err) {
+      console.error("Error submitting feedback:", err);
+      res.json({ success: false, message: "Failed to submit feedback." });
+    } else {
+      res.json({ success: true, message: "Feedback submitted successfully." });
+    }
+  });
+});
+
+// Start the Server
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

@@ -1,0 +1,192 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,500;1,400&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%;
+    font-family: 'Poppins', sans-serif;
+    
+}
+
+body {
+    
+    font-family: 'Roboto', sans-serif;
+    background: url(../img/ordback.jpg) no-repeat center center/cover;
+
+}
+
+body::-webkit-scrollbar {
+    display: none;
+}
+
+li {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+.header {
+    border-bottom: 1px solid #E2E8F0;
+    background-color: #f4c95d;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    max-height: 80px;
+}
+
+.hamburger {
+    display: none;
+}
+
+.bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: #fff;
+    transition: 0.3s ease-in-out;
+}
+
+.nav-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-item {
+    margin-left: 5rem;
+}
+
+.nav-link {
+    font-size: 2rem;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.nav-link:hover {
+    color: #854d27;
+    border: 1px solid #854d27;
+    border-radius: 3px;
+    padding: 1px 7px;
+    transition: .5s;
+}
+
+.nav-logo {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+@media only screen and (max-width: 768px) {
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 5rem;
+        flex-direction: column;
+        background-color: #f4c95d;
+        width: 100%;
+        border-radius: 10px;
+        text-align: center;
+        transition: 0.3s;
+    }
+    .nav-link {
+        color: #854d27;
+        border: 1px solid #854d27;
+        border-radius: 3px;
+        padding: 1px 7px;
+    }
+    .nav-menu.active {
+        left: 0;
+    }
+    .nav-item {
+        margin: 2.5rem 0;
+    }
+    .hamburger {
+        display: block;
+        cursor: pointer;
+    }
+}
+
+
+/* Form Styles */
+
+.taste-form-container {
+    max-width: 500px;
+    margin: 100px auto;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.taste-form-container h2 {
+    font-size: 2.8rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.taste-form-container p {
+    margin-bottom: 25px;
+    color: #555;
+    font-size: 1.6rem;
+}
+
+form input,
+form textarea {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1.6rem;
+    font-family: 'Roboto', sans-serif;
+    resize: none;
+}
+
+form textarea {
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+form button {
+    width: 100%;
+    padding: 12px;
+    background-color: #f4c95d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    font-family: 'Roboto', sans-serif;
+}
+
+form button:hover {
+    background-color: #854d27;
+}
+
+#success-message {
+    margin-top: 20px;
+    font-size: 1.6rem;
+    color: green;
+    font-weight: bold;
+}
+
+#success-message {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+#success-message.show {
+    opacity: 1;
+}

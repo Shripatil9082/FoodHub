@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="order.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <a href="./index.html" class="nav-logo"><span style="color:#854d27">FoodHub</span></a>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../Login and Register/login.html" class="nav-link">LogIn</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="order.html" class="nav-link">Order</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">contact</a>
+                </li>
+                <li class="nav-item">
+                    <a href="feedbackk.html" class="nav-link">feedback</a>
+                </li>
+                <li class="nav-item"><a href="YourTaste.html" class="nav-link">Your Taste</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <section class="menu">
+        <div class="food-item">
+            <img src="../img/pizza (1).jpg" alt="Pizza">
+            <h2>Pizza</h2>
+            <p><span class="price">&#8377;</span>399/-</p>
+            <p class="description">Delicious cheesy pizza with fresh toppings.</p>
+            <button class="order-btn" onclick="orderNow('Pizza')">Order Now</button>
+        </div>
+
+        <div class="food-item">
+            <img src="../img/burger (1).jpg" alt="Burger">
+            <h2>Burger</h2>
+            <p><span class="price">&#8377;</span>199/-</p>
+            <p class="description">Juicy beef patty with crispy lettuce and cheese.</p>
+            <button class="order-btn" onclick="orderNow('Burger')">Order Now</button>
+        </div>
+
+        <div class="food-item">
+            <img src="../img/vada.jpg" alt="Vada">
+            <h2>Vadapav</h2>
+            <p><span class="price">&#8377;</span>30/-</p>
+            <p class="description">Spicy potato fritter inside a soft bun.</p>
+            <button class="order-btn" onclick="orderNow('Vadapav')">Order Now</button>
+        </div>
+
+        <div class="food-item">
+            <img src="../img/fris (1).jpg" alt="Fries">
+            <h2>Fries</h2>
+            <p><span class="price">&#8377;</span>149/-</p>
+            <p class="description">Crispy golden fries served with ketchup.</p>
+            <button class="order-btn" onclick="orderNow('Fries')">Order Now</button>
+        </div>
+
+        <div class="food-item">
+            <img src="../img/salad.jpg" alt="Salad">
+            <h2>Salad</h2>
+            <p><span class="price">&#8377;</span>229/-</p>
+            <p class="description">Healthy mix of fresh vegetables and dressing.</p>
+            <button class="order-btn" onclick="orderNow('Salad')">Order Now</button>
+        </div>
+
+        <div class="food-item">
+            <img src="../img/Taco.jpg" alt="Taco">
+            <h2>Taco</h2>
+            <p><span class="price">&#8377;</span>175/-</p>
+            <p class="description">Crispy taco shell filled with seasoned meat.</p>
+            <button class="order-btn" onclick="orderNow('Taco')">Order Now</button>
+        </div>
+
+        <div class="food-item">
+            <img src="../img/sandwich.jpg" alt="Sandwich">
+            <h2>Sandwich</h2>
+            <p><span class="price">&#8377;</span>79/-</p>
+            <p class="description">Freshly made sandwich with layers of flavor.</p>
+            <button class="order-btn" onclick="orderNow('Sandwich')">Order Now</button>
+        </div>
+
+        <div class="food-item">
+            <img src="../img/steak.jpg" alt="Steak">
+            <h2>Steak</h2>
+            <p><span class="price">&#8377;</span>599/-</p>
+            <p class="description">Tender, juicy steak grilled to perfection.</p>
+            <button class="order-btn" onclick="orderNow('Steak')">Order Now</button>
+        </div>
+
+        <div class="food-item">
+            <img src="../img/ramen.jpg" alt="Ramen">
+            <h2>Ramen</h2>
+            <p><span class="price">&#8377;</span>299/-</p>
+            <p class="description">Hot and flavorful Japanese noodle soup.</p>
+            <button class="order-btn" onclick="orderNow('Ramen')">Order Now</button>
+        </div>
+
+        <div class="food-item">
+            <img src="../img/donut.jpg" alt="Donut">
+            <h2>Donut</h2>
+            <p><span class="price">&#8377;</span>49/-</p>
+            <p class="description">Sweet and fluffy donut with chocolate glaze.</p>
+            <button class="order-btn" onclick="orderNow('Donut')">Order Now</button>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 FOODHUB. All rights reserved.</p>
+    </footer>
+    <script>
+        // Get all the "Order Now" buttons
+        const orderNowButtons = document.querySelectorAll('.order-btn');
+
+        // Add event listener to each "Order Now" button
+        orderNowButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Redirect the user to the ordDetails page
+                window.location.href = 'ordDetails.html';
+            });
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details and Payment</title>
+    <link rel="stylesheet" href="ord.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Order Details and Payment</h1>
+        <form id="orderForm">
+            <!-- Customer Information -->
+            <section>
+                <h2>Customer Information</h2>
+                <label for="name">Full Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+                
+                <label for="phone">Phone Number:</label>
+                <input type="text" id="phone" name="phone" required><br><br>
+                
+                <label for="email">Email Address:</label>
+                <input type="email" id="email" name="email" required><br><br>
+            </section>
+            
+            <!-- Delivery Information -->
+            <section>
+                <h2>Delivery Information</h2>
+                <label for="address">Street Address:</label>
+                <input type="text" id="address" name="address" required><br><br>
+                
+                <label for="city">City:</label>
+                <input type="text" id="city" name="city" required><br><br>
+                
+                <label for="postalCode">Postal Code:</label>
+                <input type="text" id="postalCode" name="postalCode" required><br><br>
+                
+                <label for="country">Country:</label>
+                <input type="text" id="country" name="country" required><br><br>
+            
+                <label for="selectfood">Select food items</label>          
+                <select id="selectfood" name="selectfood">
+                    <option value="pizza">Pizza</option>
+                    <option value="burger">Burger</option>
+                    <option value="vadapav">Vadapav</option>
+                    <option value="fries">Fries</option>
+                    <option value="salad">Salad</option>
+                    <option value="taco">Taco</option>
+                    <option value="sandwich">Sandwich</option>
+                    <option value="steak">Steak</option>
+                    <option value="ramen">Ramen</option>
+                    <option value="donut">Donut</option>
+                </select>
+                <div id="quantity-container">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="10">
+                </div>
+                <button id="add-item-btn">Add Item</button>
+                <div id="selected-items-container">
+                    <h2>Selected Items:</h2>
+                    <ul id="selected-items-list"></ul>
+                </div>
+                <input type="text" id="total-amount" name="total-amount" readonly>
+                <br>
+                <label for="text">Amount</label>
+                <input type="text" id="amount" name="amount" readonly>
+                <label for="orderDate">Select Order Date:</label>
+                <input type="date" id="orderDate" name="orderDate" required><br><br>
+            </section>
+            
+            <!-- Order Details -->
+            <section>
+                <h2>Order Details</h2>
+                <label for="specialInstructions">Special Instructions:</label><br>
+                <textarea id="specialInstructions" name="specialInstructions" style="height: 100px; resize: none;"></textarea><br><br>
+                
+            </section>
+            
+            <!-- Payment Method -->
+            <section>
+                <h2>Payment Method</h2>
+                <label for="paymentMethod">Choose Payment Method:</label><br>
+                <input type="radio" id="creditCard" name="paymentMethod" value="Credit/Debit Card" required> Credit/Debit Card
+                <div id="creditCardDetails" style="display: none;">
+                    <label for="cardNumber">Credit/Debit Card Number:</label>
+                    <input type="text" id="cardNumber" name="cardNumber" placeholder="Enter your card number" required>
+                    <label for="cardExpiry">Card Expiry:</label>
+                    <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" required>
+                    <label for="cardCvv">Card CVV:</label>
+                    <input type="text" id="cardCvv" name="cardCvv" placeholder="Enter your card CVV" required>
+                </div>
+                <input type="radio" id="cash" name="paymentMethod" value="Cash on Delivery" required> Cash on Delivery
+                <input type="radio" id="upi" name="paymentMethod" value="UPI" required> UPI
+                <div id="upiDetails" style="display: none;">
+                    <label for="upiMethod">Select UPI Method:</label><br>
+                    <div style="display: flex; flex-direction: row;">
+                        <input type="radio" id="googlePay" name="upiMethod" value="Google Pay" required> Google Pay
+                        <input type="radio" id="phonePay" name="upiMethod" value="Phone Pay" required> Phone Pay
+                        <input type="radio" id="upiId" name="upiMethod" value="UPI ID" required> UPI ID
+                    </div>
+                    <div id="upiIdInput" style="display: none;">
+                        <label for="upiIdValue">Enter UPI ID:</label>
+                        <input type="text" id="upiIdValue" name="upiIdValue" placeholder="Enter your UPI ID" required>
+                    </div>
+                </div>
+            </section>
+            
+            <button type="submit">Place Order</button>
+        </form>
+    </div>
+
+    <script>
+// Define the prices for each food item
+const prices = {
+    pizza: 399,
+    burger: 199,
+    vadapav: 30,
+    fries: 149,
+    salad: 229,
+    taco: 175,
+    sandwich: 79,
+    steak: 599,
+    ramen: 299,
+    donut: 49
+};
+
+// Get the select food item, quantity, and add item button fields
+const selectFood = document.getElementById('selectfood');
+const quantity = document.getElementById('quantity');
+const addItemBtn = document.getElementById('add-item-btn');
+const selectedItemsList = document.getElementById('selected-items-list');
+const totalAmount = document.getElementById('total-amount');
+const amount = document.getElementById('amount');
+
+// Initialize an empty array to store the selected items
+let selectedItems = [];
+
+// Add an event listener to the add item button
+addItemBtn.addEventListener('click', addItem);
+
+// Function to add an item to the selected items list
+function addItem() {
+    const selectedFood = selectFood.value;
+    const quantityValue = parseInt(quantity.value);
+    const price = prices[selectedFood];
+    const calculatedAmount = price * quantityValue;
+
+    // Create a new object to store the selected item
+    const selectedItem = {
+        name: selectedFood,
+        quantity: quantityValue,
+        price: price,
+        amount: calculatedAmount
+    };
+
+    // Add the selected item to the array
+    selectedItems.push(selectedItem);
+
+    // Update the selected items list
+    updateSelectedItemsList();
+
+    // Update the total amount
+    updateTotalAmount();
+
+    // Store the selected item in the database
+    storeItemInDatabase(selectedItem);
+}
+
+// Function to update the selected items list
+function updateSelectedItemsList() {
+    selectedItemsList.innerHTML = '';
+
+    // Loop through the selected items array
+    selectedItems.forEach((item, index) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${item.name} x ${item.quantity} = ₹${item.amount}`;
+        selectedItemsList.appendChild(listItem);
+    });
+}
+
+// Function to update the total amount
+function updateTotalAmount() {
+    let total = 0;
+
+    // Loop through the selected items array
+    selectedItems.forEach((item) => {
+        total += item.amount;
+    });
+
+    totalAmount.value = `₹${total}`;
+    amount.value = `₹${total}`;
+}
+
+// Function to store the selected item in the database
+function storeItemInDatabase(item) {
+    fetch('http://localhost:3000/store-item', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(item)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Item stored successfully:', data);
+    })
+    .catch(error => {
+        console.error('Error storing item:', error);
+    });
+}
+
+// Get the order form
+const orderForm = document.getElementById('orderForm');
+
+// Add event listener to the form submission
+orderForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // Get the selected food item, quantity, and order date
+    const selectedFood = selectFood.value;
+    const quantity = quantity.value;
+    const orderDate = document.getElementById('orderDate').value;
+
+    // Create a new object to store the order details
+    const orderDetails = {
+        foodItem: selectedFood,
+        quantity: quantity,
+        orderDate: orderDate,
+        // Add other order details here...
+    };
+
+    // Send the order details to the server
+    fetch('http://localhost:3000/place-order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderDetails)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Order placed successfully:', data);
+    })
+    .catch(error => {
+        console.error('Error placing order:', error);
+    });
+});
+    </script>
+</body>
+</html>

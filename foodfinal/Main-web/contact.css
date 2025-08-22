@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,500;1,400&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%;
+    font-family: 'Roboto', sans-serif;
+}
+
+body {
+    background: #FFDC7F;
+    padding-top: 80px;
+    background: url(../img/cont.jpg) no-repeat center center/cover;
+}
+
+.header {
+    border-bottom: 1px solid #E2E8F0;
+    background-color: #f4c95d;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1.5rem;
+}
+
+.nav-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-item {
+    margin-left: 5rem;
+}
+
+.nav-link {
+    font-size: 2rem;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.nav-link:hover {
+    color: #854d27;
+    border: 1px solid #854d27;
+    border-radius: 3px;
+    padding: 1px 7px;
+    transition: .5s;
+}
+
+.contact-container {
+    max-width: 600px;
+    margin: 100px auto 100px 90px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.contact-container h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.feedback-input {
+    color: #333;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    font-size: 1.6rem;
+    border-radius: 5px;
+    line-height: 22px;
+    background-color: #f9f9f9;
+    border: 2px solid #ddd;
+    transition: all 0.3s;
+    padding: 13px;
+    margin-bottom: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: 0;
+}
+
+.feedback-input:focus {
+    border: 2px solid #854d27;
+}
+
+textarea {
+    height: 150px;
+    line-height: 150%;
+    resize: none;
+}
+
+[type="submit"] {
+    font-family: 'Roboto', sans-serif;
+    width: 100%;
+    background: #f4c95d;
+    border-radius: 5px;
+    border: 0;
+    cursor: pointer;
+    color: white;
+    font-size: 1.8rem;
+    padding: 15px;
+    transition: all 0.3s;
+    font-weight: bold;
+}
+
+[type="submit"]:hover {
+    background: #854d27;
+}
+
+@media only screen and (max-width: 768px) {
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 5rem;
+        flex-direction: column;
+        background-color: #f4c95d;
+        width: 100%;
+        border-radius: 10px;
+        text-align: center;
+        transition: 0.3s;
+    }
+    .nav-link {
+        color: #854d27;
+        border: 1px solid #854d27;
+        border-radius: 3px;
+        padding: 1px 7px;
+        transition: .5s;
+    }
+    .nav-menu.active {
+        left: 0;
+    }
+    .nav-item {
+        margin: 2.5rem 0;
+    }
+    .hamburger {
+        display: block;
+        cursor: pointer;
+    }
+}

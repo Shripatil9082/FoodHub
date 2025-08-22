@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Taste | FOODHUB</title>
+    <link rel="stylesheet" href="yourtaste.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Navbar Start -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="#" class="nav-logo"><span style="color:#854d27">FoodHub</span></a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="../Login and Register/login.html" class="nav-link">LogIn</a></li>
+                <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="order.html" class="nav-link">Order</a></li>
+                <li class="nav-item"><a href="contact.html" class="nav-link">Contact</a></li>
+                <li class="nav-item"><a href="feedbackk.html" class="nav-link">Feedback</a></li>
+                <li class="nav-item"><a href="YourTaste.html" class="nav-link">Your Taste</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+    <!--  Navbar End -->
+
+    <!--  Suggestion Form Start -->
+    <section class="taste-form-container">
+        <h2>Tell Us About Your Favorite Dish!</h2>
+        <p>We’d love to hear what dish you’d like to see on FoodHub.</p>
+
+        <form id="tasteForm">
+            <input type="text" id="name" placeholder="Your Name" required>
+            <input type="email" id="email" placeholder="Your Email" required>
+            <input type="text" id="dishName" placeholder="Dish Name" required>
+            <textarea id="dishDescription" rows="4" placeholder="Why do you love it?" required></textarea>
+            <button type="submit">Submit Suggestion</button>
+        </form>
+
+
+        <div id="success-message" style="display:none; margin-top: 15px; color: green;">
+             Thank you! Your suggestion has been submitted. 🍽️
+        </div>
+    </section>
+    <!--  Suggestion Form End -->
+
+    <!-- Script for Form Handling -->
+    <script>
+        document.getElementById("tasteForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const dishName = document.getElementById("dishName").value;
+            const dishDescription = document.getElementById("dishDescription").value;
+
+            try {
+                const res = await fetch("http://localhost:3000/suggest-dish", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        dishName,
+                        dishDescription,
+                    }),
+                });
+
+                if (res.ok) {
+                    document.getElementById("tasteForm").reset();
+
+                    const messageDiv = document.getElementById("success-message");
+                    messageDiv.classList.add("show"); // Add class to fade in
+                    messageDiv.style.display = "block";
+
+                    // Hide the message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.classList.remove("show"); // Remove fade-in class
+                        messageDiv.style.display = "none";
+                    }, 3000);
+                } else {
+                    alert("❌ Failed to submit your suggestion. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("⚠️ An error occurred. Please check your internet or server.");
+            }
+
+
+        });
+    </script>
+
+
+
+
+
+
+</body>
+
+</html>

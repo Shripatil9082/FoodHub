@@ -1,0 +1,252 @@
+// Define routes for the admin dashboard
+app.get('/admin', authenticate, (req, res) => {
+    // Retrieve data from the database
+    db.query('SELECT * FROM users', (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error retrieving data' });
+        } else {
+            res.send(results);
+        }
+    });
+});
+
+
+function authenticate(req, res, next) {
+    if (req.session.adminId) {
+        next(); // If the user is logged in, call the next middleware
+    } else {
+        res.status(401).send({ message: 'Unauthorized' }); // If the user is not logged in, return an error
+    }
+}
+
+app.post('/admin/login', (req, res) => {
+    const { username, password } = req.body;
+
+    db.query('SELECT * FROM admins WHERE username = ?', [username], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Error authenticating user' });
+        }
+
+        if (results.length === 0) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+
+        const admin = results[0];
+
+        bcrypt.compare(password, admin.password, (err, match) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ message: 'Error authenticating user' });
+            }
+
+            if (!match) {
+                return res.status(401).json({ message: 'Invalid username or password' });
+            }
+
+            req.session.adminId = admin.id;
+
+            // Send JSON response instead of direct redirect
+            res.json({ success: true, redirectURL: '/Admin/admin_dashboard.html' });
+        });
+    });
+});
+
+
+
+app.post('/admin/users', authenticate, (req, res) => {
+    // Create a new user
+    const user = req.body;
+    db.query('INSERT INTO users SET ?', user, (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error creating user' });
+        } else {
+            res.send({ message: 'User  created successfully' });
+        }
+    });
+});
+
+app.put('/admin/users/:id', authenticate, (req, res) => {
+    // Update a user
+    const id = req.params.id;
+    const user = req.body;
+    db.query('UPDATE users SET ? WHERE id = ?', [user, id], (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error updating user' });
+        } else {
+            res.send({ message: 'User  updated successfully' });
+        }
+    });
+});
+
+app.delete('/admin/users/:id', authenticate, (req, res) => {
+    // Delete a user
+    const id = req.params.id;
+    db.query('DELETE FROM users WHERE id = ?', id, (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error deleting user' });
+        } else {
+            res.send({ message: 'User  deleted successfully' });
+        }
+    });
+});
+
+app.get('/admin/orders', authenticate, (req, res) => {
+    // Retrieve orders from the database
+    db.query('SELECT * FROM orders', (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error retrieving orders' });
+        } else {
+            res.send(results);
+        }
+    });
+});
+
+app.post('/admin/orders', authenticate, (req, res) => {
+    // Create a new order
+    const order = req.body;
+    db.query('INSERT INTO orders SET ?', order, (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error creating order' });
+        } else {
+            res.send({ message: 'Order created successfully' });
+        }
+    });
+});
+
+app.put('/admin/orders/:id', authenticate, (req, res) => {
+    // Update an order
+    const id = req.params.id;
+    const order = req.body;
+    db.query('UPDATE orders SET ? WHERE id = ?', [order, id], (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error updating order' });
+        } else {
+            res.send({ message: 'Order updated successfully' });
+        }
+    });
+});
+
+app.delete('/admin/orders/:id', authenticate, (req, res) => {
+    // Delete an order
+    const id = req.params.id;
+    db.query('DELETE FROM orders WHERE id = ?', id, (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error deleting order' });
+        } else {
+            res.send({ message: 'Order deleted successfully' });
+        }
+    });
+});
+
+app.get('/admin/products', authenticate, (req, res) => {
+    // Retrieve products from the database
+    db.query('SELECT * FROM products', (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error retrieving products' });
+        } else {
+            res.send(results);
+        }
+    });
+});
+
+app.post('/admin/products', authenticate, (req, res) => {
+    // Create a new product
+    const product = req.body;
+    db.query('INSERT INTO products SET ?', product, (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error creating product' });
+        } else {
+            res.send({ message: 'Product created successfully' });
+        }
+    });
+});
+
+app.put('/admin/products/:id', authenticate, (req, res) => {
+    // Update a product
+    const id = req.params.id;
+    const product = req.body;
+    db.query('UPDATE products SET ? WHERE id = ?', [product, id], (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error updating product' });
+        } else {
+            res.send({ message: 'Product updated successfully' });
+        }
+    });
+});
+
+app.delete('/admin/products/:id', authenticate, (req, res) => {
+    // Delete a product
+    const id = req.params.id;
+    db.query('DELETE FROM products WHERE id = ?', id, (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error deleting product' });
+        } else {
+            res.send({ message: 'Product deleted successfully' });
+        }
+    });
+});
+
+app.get('/admin/feedback', authenticate, (req, res) => {
+    // Retrieve feedback from the database
+    db.query('SELECT * FROM feedback', (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error retrieving feedback' });
+        } else {
+            res.send(results);
+        }
+    });
+});
+
+app.post('/admin/feedback', authenticate, (req, res) => {
+    // Create a new feedback
+    const feedback = req.body;
+    db.query('INSERT INTO feedback SET ?', feedback, (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error creating feedback' });
+        } else {
+            res.send({ message: 'Feedback created successfully' });
+        }
+    });
+});
+
+app.put('/admin/feedback/:id', authenticate, (req, res) => {
+    // Update a feedback
+    const id = req.params.id;
+    const feedback = req.body;
+    db.query('UPDATE feedback SET ? WHERE id = ?', [feedback, id], (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error updating feedback' });
+        } else {
+            res.send({ message: 'Feedback updated successfully' });
+        }
+    });
+});
+
+app.delete('/admin/feedback/:id', authenticate, (req, res) => {
+    // Delete a feedback
+    const id = req.params.id;
+    db.query('DELETE FROM feedback WHERE id = ?', id, (err, results) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ message: 'Error deleting feedback' });
+        } else {
+            res.send({ message: 'Feedback deleted successfully' });
+        }
+    });
+});

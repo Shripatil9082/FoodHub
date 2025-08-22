@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details and Payment</title>
+    <link rel="stylesheet" href="ordDetails.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Order Details and Payment</h1>
+        <form id="orderForm">
+            <!-- Customer Information -->
+            <section>
+                <h2>Customer Information</h2>
+                <label for="name">Full Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+
+                <label for="phone">Phone Number:</label>
+                <input type="text" id="phone" name="phone" required><br><br>
+
+                <label for="email">Email Address:</label>
+                <input type="email" id="email" name="email" required><br><br>
+            </section>
+
+            <!-- Delivery Information -->
+            <section>
+                <h2>Delivery Information</h2>
+                <label for="address">Street Address:</label>
+                <input type="text" id="address" name="address" required><br><br>
+
+                <label for="city">City:</label>
+                <input type="text" id="city" name="city" required><br><br>
+
+                <label for="postalCode">Postal Code:</label>
+                <input type="text" id="postalCode" name="postalCode" required><br><br>
+
+                <label for="country">Country:</label>
+                <input type="text" id="country" name="country" required><br><br>
+
+                <label for="selectfood">Select food items</label>
+                <select id="selectfood" name="selectfood">
+                    <option value="pizza">Pizza</option>
+                    <option value="burger">Burger</option>
+                    <option value="vadapav">Vadapav</option>
+                    <option value="fries">Fries</option>
+                    <option value="salad">Salad</option>
+                    <option value="taco">Taco</option>
+                    <option value="sandwich">Sandwich</option>
+                    <option value="steak">Steak</option>
+                    <option value="ramen">Ramen</option>
+                    <option value="donut">Donut</option>
+                </select>
+                <div id="quantity-container">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="10">
+                </div>
+
+                <br>
+                <label for="text">Amount</label>
+                <input type="text" id="amount" name="amount" readonly>
+                <label for="orderDate">Select Order Date:</label>
+                <input type="date" id="orderDate" name="orderDate" required><br><br>
+            </section>
+
+            <!-- Order Details -->
+            <section>
+                <h2>Order Details</h2>
+                <label for="specialInstructions">Special Instructions:</label><br>
+                <textarea id="specialInstructions" name="specialInstructions" style="height: 100px; resize: none;"></textarea><br><br>
+
+            </section>
+
+            <!-- Payment Method -->
+            <section>
+                <h2>Payment Method</h2>
+                <label for="paymentMethod">Choose Payment Method:</label><br>
+                <input type="radio" id="creditCard" name="paymentMethod" value="Credit/Debit Card" required> Credit/Debit Card
+                <div id="creditCardDetails" style="display: none;">
+                    <label for="cardNumber">Credit/Debit Card Number:</label>
+                    <input type="text" id="cardNumber" name="cardNumber" placeholder="Enter your card number" required>
+                    <label for="cardExpiry">Card Expiry:</label>
+                    <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" required>
+                    <label for="cardCvv">Card CVV:</label>
+                    <input type="text" id="cardCvv" name="cardCvv" placeholder="Enter your card CVV" required>
+                </div>
+                <input type="radio" id="cash" name="paymentMethod" value="Cash on Delivery" required> Cash on Delivery
+                <input type="radio" id="upi" name="paymentMethod" value="UPI" required> UPI
+                <div id="upiDetails" style="display: none;">
+                    <label for="upiMethod">Select UPI Method:</label><br>
+                    <div style="display: flex; flex-direction: row;">
+                        <input type="radio" id="googlePay" name="upiMethod" value="Google Pay" required> Google Pay
+                        <input type="radio" id="phonePay" name="upiMethod" value="Phone Pay" required> Phone Pay
+                        <input type="radio" id="upiId" name="upiMethod" value="UPI ID" required> UPI ID
+                    </div>
+                    <div id="upiIdInput" style="display: none;">
+                        <label for="upiIdValue">Enter UPI ID:</label>
+                        <input type="text" id="upiIdValue" name="upiIdValue" placeholder="Enter your UPI ID" required>
+                    </div>
+                </div>
+            </section>
+
+            <button type="submit">Place Order</button>
+        </form>
+    </div>
+
+    <script>
+        // Get the credit card radio button
+        const creditCardRadio = document.getElementById('creditCard');
+
+        // Add event listener to the credit card radio button
+        creditCardRadio.addEventListener('change', () => {
+            const creditCardDetails = document.getElementById('creditCardDetails');
+            if (creditCardRadio.checked) {
+                creditCardDetails.style.display = 'block';
+            } else {
+                creditCardDetails.style.display = 'none';
+                document.getElementById('cardNumber').value = '';
+                document.getElementById('cardExpiry').value = '';
+                document.getElementById('cardCvv').value = '';
+            }
+        });
+
+        // Get the UPI radio button
+        const upiRadio = document.getElementById('upi');
+
+        // Add event listener to the UPI radio button
+        upiRadio.addEventListener('change', () => {
+            const upiDetails = document.getElementById('upiDetails');
+            if (upiRadio.checked) {
+                upiDetails.style.display = 'block';
+            } else {
+                upiDetails.style.display = 'none';
+            }
+        });
+
+        // Get the UPI ID radio button
+        const upiIdRadio = document.getElementById('upiId');
+
+        // Add event listener to the UPI ID radio button
+        upiIdRadio.addEventListener('change', () => {
+            const upiIdInput = document.getElementById('upiIdInput');
+            if (upiIdRadio.checked) {
+                upiIdInput.style.display = 'block';
+            } else {
+                upiIdInput.style.display = 'none';
+            }
+        });
+
+        // Get the order form
+        const orderForm = document.getElementById('orderForm');
+
+        // Add event listener to the form submission
+        orderForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Get the selected food item, quantity, and order date
+            const selectedFood = document.getElementById('selectfood').value;
+            const quantity = document.getElementById('quantity').value;
+            const orderDate = document.getElementById('orderDate').value;
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+            const postalCode = document.getElementById('postalCode').value;
+            const country = document.getElementById('country').value;
+            const specialInstructions = document.getElementById('specialInstructions').value;
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+            // Create a new object to store the order details
+            const orderDetails = {
+                name: name,
+                phone: phone,
+                email: email,
+                address: address,
+                city: city,
+                postalCode: postalCode,
+                country: country,
+                foodItem: selectedFood,
+                quantity: quantity,
+                amount: document.getElementById('amount').value,
+                orderDate: orderDate,
+                specialInstructions: specialInstructions,
+                paymentMethod: paymentMethod
+            };
+
+            // Send the order details to the server
+            fetch('http://localhost:3000/place-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderDetails)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Order placed successfully:', data);
+                    alert('Order placed successfully!');
+                    orderForm.reset();
+                })
+                .catch(error => {
+                    console.error('Error placing order:', error);
+                    alert('Error placing order. Please try again later.');
+                });
+        });
+
+        // Define the prices for each food item
+        const prices = {
+            pizza: 399,
+            burger: 199,
+            vadapav: 30,
+            fries: 149,
+            salad: 229,
+            taco: 175,
+            sandwich: 79,
+            steak: 599,
+            ramen: 299,
+            donut: 49
+        };
+
+        // Get the select food item, quantity, and amount fields
+        const selectFood = document.getElementById('selectfood');
+        const quantity = document.getElementById('quantity');
+        const amount = document.getElementById('amount');
+
+        // Add an event listener to the select food item field
+        selectFood.addEventListener('change', calculateAmount);
+
+        // Add an event listener to the quantity field
+        quantity.addEventListener('input', calculateAmount);
+
+        // Function to calculate the amount
+        function calculateAmount() {
+            const selectedFood = selectFood.value;
+            const quantityValue = parseInt(quantity.value);
+            const price = prices[selectedFood];
+            const calculatedAmount = price * quantityValue;
+            amount.value = `₹${calculatedAmount}`;
+        }
+
+        // Call the calculateAmount function initially
+        calculateAmount();
+
+        // Function to toggle credit card fields
+        function toggleCreditCardFields() {
+            const creditCardDetails = document.getElementById('creditCardDetails');
+            if (document.getElementById('creditCard').checked) {
+                creditCardDetails.style.display = 'block';
+                document.getElementById('cardNumber').setAttribute('required', 'true');
+                document.getElementById('cardExpiry').setAttribute('required', 'true');
+                document.getElementById('cardCvv').setAttribute('required', 'true');
+            } else {
+                creditCardDetails.style.display = 'none';
+                document.getElementById('cardNumber').removeAttribute('required');
+                document.getElementById('cardExpiry').removeAttribute('required');
+                document.getElementById('cardCvv').removeAttribute('required');
+            }
+        }
+
+        // Function to toggle UPI fields
+        function toggleUPIFields() {
+            const upiDetails = document.getElementById('upiDetails');
+            if (document.getElementById('upi').checked) {
+                upiDetails.style.display = 'block';
+            } else {
+                upiDetails.style.display = 'none';
+                document.querySelectorAll('input[name="upiMethod"]').forEach((input) => input.removeAttribute('required'));
+                document.getElementById('upiIdValue').removeAttribute('required');
+            }
+        }
+
+        // Function to toggle UPI ID input field
+        function toggleUPIIdField() {
+            const upiIdInput = document.getElementById('upiIdInput');
+            if (document.getElementById('upiId').checked) {
+                upiIdInput.style.display = 'block';
+                document.getElementById('upiIdValue').setAttribute('required', 'true');
+            } else {
+                upiIdInput.style.display = 'none';
+                document.getElementById('upiIdValue').removeAttribute('required');
+            }
+        }
+
+        // Add event listeners
+        document.getElementById('creditCard').addEventListener('change', toggleCreditCardFields);
+        document.getElementById('upi').addEventListener('change', toggleUPIFields);
+        document.getElementById('upiId').addEventListener('change', toggleUPIIdField);
+
+        // Run functions on page load to ensure proper state
+        toggleCreditCardFields();
+        toggleUPIFields();
+        toggleUPIIdField();
+
+        // Modify form submission to prevent errors
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            toggleCreditCardFields();
+            toggleUPIFields();
+            toggleUPIIdField();
+        });
+
+
+
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const orderForm = document.getElementById("orderForm");
+
+            function generateReceipt(orderDetails) {
+                const {
+                    jsPDF
+                } = window.jspdf;
+                const doc = new jsPDF();
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(18);
+                doc.text("FoodHub - Order Receipt", 20, 20);
+
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "normal");
+                doc.text(`Customer Name: ${orderDetails.name}`, 20, 40);
+                doc.text(`Phone: ${orderDetails.phone}`, 20, 50);
+                doc.text(`Email: ${orderDetails.email}`, 20, 60);
+                doc.text(`Address: ${orderDetails.address}, ${orderDetails.city}, ${orderDetails.country}`, 20, 70);
+                doc.text(`Postal Code: ${orderDetails.postalCode}`, 20, 80);
+
+                doc.text(`Food Item: ${orderDetails.foodItem}`, 20, 100);
+                doc.text(`Quantity: ${orderDetails.quantity}`, 20, 110);
+                doc.text(`Amount: ${orderDetails.amount}`, 20, 120);
+                doc.text(`Order Date: ${orderDetails.orderDate}`, 20, 130);
+
+                doc.text(`Payment Method: ${orderDetails.paymentMethod}`, 20, 150);
+
+                if (orderDetails.specialInstructions) {
+                    doc.text(`Special Instructions: ${orderDetails.specialInstructions}`, 20, 170);
+                }
+
+                doc.text("Thank you for your order!", 20, 190);
+                doc.save(`Order_Receipt_${Date.now()}.pdf`);
+            }
+
+            orderForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                // Get order details
+                const selectedFood = document.getElementById("selectfood").value;
+                const quantity = document.getElementById("quantity").value;
+                const orderDate = document.getElementById("orderDate").value;
+                const name = document.getElementById("name").value;
+                const phone = document.getElementById("phone").value;
+                const email = document.getElementById("email").value;
+                const address = document.getElementById("address").value;
+                const city = document.getElementById("city").value;
+                const postalCode = document.getElementById("postalCode").value;
+                const country = document.getElementById("country").value;
+                const specialInstructions = document.getElementById("specialInstructions").value;
+                const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+                const orderDetails = {
+                    name,
+                    phone,
+                    email,
+                    address,
+                    city,
+                    postalCode,
+                    country,
+                    foodItem: selectedFood,
+                    quantity,
+                    amount: document.getElementById("amount").value,
+                    orderDate,
+                    specialInstructions,
+                    paymentMethod
+                };
+
+                // Send data to the server (optional)
+                fetch("http://localhost:3000/place-order", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(orderDetails),
+                    })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        console.log("Order placed successfully:", data);
+                        alert("Order placed successfully!");
+                        orderForm.reset();
+                        generateReceipt(orderDetails); // Generate and download receipt
+                    })
+                    .catch((error) => {
+                        console.error("Error placing order:", error);
+                        alert("Error placing order. Please try again later.");
+                    });
+            });
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</body>
+
+</html>

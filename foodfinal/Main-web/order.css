@@ -1,0 +1,196 @@
+/* Global Reset and Base Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Poppins, sans-serif;
+    background-color: whitesmoke;
+    color: #333;
+}
+
+html {
+    font-size: 62.5%;
+    font-family: 'Poppins', sans-serif;
+}
+
+li {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+/* Header and Navbar Container */
+
+.header {
+    border-bottom: 1px solid #E2E8F0;
+    background-color: #f4c95d;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1.5rem;
+}
+
+
+/* Logo Styling */
+
+.nav-logo {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+
+/* Navigation Menu and Links */
+
+.nav-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-item {
+    margin-left: 5rem;
+}
+
+.nav-link {
+    font-size: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.nav-link:hover {
+    color: #854d27;
+    border: 1px solid #854d27;
+    border-radius: 3px;
+    padding: 1px 7px;
+    transition: 0.5s;
+}
+
+
+/* Hamburger Menu (Mobile Responsive) */
+
+.hamburger {
+    display: none;
+}
+
+.bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+    background-color: #fff;
+}
+
+.description {
+    font-size: 14px;
+    font-weight: bold;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+
+/* menu items */
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-size: 3rem;
+    color: #ff6347;
+}
+
+p {
+    font-size: 1.2rem;
+}
+
+.menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    /* Responsive grid */
+    gap: 20px;
+    /* Spacing between items */
+    padding: 20px;
+}
+
+.food-item {
+    background-color: #fff;
+    padding: 20px;
+    text-align: center;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.food-item:hover {
+    transform: translateY(-5px);
+    background-color: #fad370;
+}
+
+.food-item img {
+    width: 100%;
+    height: 200px;
+    /* Fixed height */
+    object-fit: cover;
+    /* Crop the image */
+    border-radius: 8px;
+}
+
+.food-item h2 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-top: 15px;
+}
+
+.food-item p {
+    font-size: 1.2rem;
+    color: black;
+}
+
+.food-item p span {
+    color: red;
+    font-weight: bold;
+}
+
+.price {
+    color: red !important;
+    font-weight: bold;
+}
+
+.order-btn {
+    background-color: #ff6347;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.3s;
+}
+
+.order-btn:hover {
+    background-color: #854d27;
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 0.9rem;
+    color: #777;
+}
